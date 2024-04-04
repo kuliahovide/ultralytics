@@ -40,6 +40,7 @@ __all__ = (
     "LightBottleneck",
     "LightCSP",
     "LightNCSPELAN4",
+    "LightC2f"
 )
 
 
@@ -238,6 +239,11 @@ class C2f(nn.Module):
         y = list(self.cv1(x).split((self.c, self.c), 1))
         y.extend(m(y[-1]) for m in self.m)
         return self.cv2(torch.cat(y, 1))
+
+class LightC2f(C2f):
+    def __init__(self, c1, c2, n=1, shortcut=False, g=1, e=0.5):
+        super().__init__( c1, c2, n=1, shortcut=False, g=1, e=0.5)
+        self.m = nn.ModuleList(LightBottleneck(self.c, self.c, shortcut, g, k=((3, 3), (3, 3)), e=1.0) for _ in range(n))
 
 
 class C3(nn.Module):

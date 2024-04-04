@@ -48,7 +48,8 @@ from .block import (
     Silence,
     LightBottleneck,
     LightCSP,
-    LightNCSPELAN4
+    LightNCSPELAN4,
+    LightC2f
 )
 from .conv import (
     CBAM,
