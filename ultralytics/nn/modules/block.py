@@ -37,6 +37,9 @@ __all__ = (
     "CBFuse",
     "CBLinear",
     "Silence",
+    "LightBottleneck",
+    "LightCSP",
+    "LightNCSPELAN4",
 )
 
 
@@ -567,6 +570,12 @@ class RepBottleneck(Bottleneck):
         c_ = int(c2 * e)  # hidden channels
         self.cv1 = RepConv(c1, c_, k[0], 1)
 
+class LightBottleneck(Bottleneck):
+    def __init__(self, c1,c2, shortcut=True, g=1, k=(3,3), e=0.5):
+        super().__init__(c1, c2, shortcut, g, k, e)
+        c_ = int(c2 * e)  # hidden channels
+        self.cv1 = LightConv(c1, c_, k[0], 1)
+
 
 class RepCSP(C3):
     """Rep CSP Bottleneck with 3 convolutions."""
@@ -577,6 +586,12 @@ class RepCSP(C3):
         c_ = int(c2 * e)  # hidden channels
         self.m = nn.Sequential(*(RepBottleneck(c_, c_, shortcut, g, e=1.0) for _ in range(n)))
 
+class LightCSP(C3):
+    def __init__(self, c1, c2, n=1, shortcut=True, g=1, e=0.5):
+        """Initializes RepCSP layer with given channels, repetitions, shortcut, groups and expansion ratio."""
+        super().__init__(c1, c2, n, shortcut, g, e)
+        c_ = int(c2 * e)  # hidden channels
+        self.m = nn.Sequential(*(LightBottleneck(c_, c_, shortcut, g, e=1.0) for _ in range(n)))
 
 class RepNCSPELAN4(nn.Module):
     """CSP-ELAN."""
@@ -601,6 +616,12 @@ class RepNCSPELAN4(nn.Module):
         y = list(self.cv1(x).split((self.c, self.c), 1))
         y.extend(m(y[-1]) for m in [self.cv2, self.cv3])
         return self.cv4(torch.cat(y, 1))
+
+class LightNCSPELAN4(RepNCSPELAN4):
+    def __init__(self, c1, c2, c3, c4, n=1):
+        super().__init__( c1, c2, c3, c4, n)
+        self.cv2 = nn.Sequential(LightCSP(c3 // 2, c4, n), Conv(c4, c4, 3, 1))
+        self.cv3 = nn.Sequential(LightCSP(c4, c4, n), Conv(c4, c4, 3, 1))
 
 
 class ADown(nn.Module):

@@ -46,6 +46,9 @@ from .block import (
     CBFuse,
     CBLinear,
     Silence,
+    LightBottleneck,
+    LightCSP,
+    LightNCSPELAN4
 )
 from .conv import (
     CBAM,
