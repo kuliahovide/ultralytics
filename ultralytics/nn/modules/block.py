@@ -246,6 +246,15 @@ class LightC2f(C2f):
         self.c = int(c2 * e)  # hidden channels
         self.m = nn.ModuleList(LightBottleneck(self.c, self.c, shortcut, g, k=((3, 3), (3, 3)), e=1.0) for _ in range(n))
 
+    def forward(self, x):
+        """Forward pass through C2f layer."""
+        print(x.shape)
+        y = list(self.cv1(x).chunk(2, 1))
+        print([y_.shape for y_ in y])
+        y.extend(m(y[-1]) for m in self.m)
+        print([y_.shape for y_ in y])
+        return self.cv2(torch.cat(y, 1))
+
 
 class C3(nn.Module):
     """CSP Bottleneck with 3 convolutions."""
