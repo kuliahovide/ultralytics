@@ -243,6 +243,7 @@ class C2f(nn.Module):
 class LightC2f(C2f):
     def __init__(self, c1, c2, n=1, shortcut=False, g=1, e=0.5):
         super().__init__( c1, c2, n=1, shortcut=False, g=1, e=0.5)
+        self.c = int(c2 * e)  # hidden channels
         self.m = nn.ModuleList(LightBottleneck(self.c, self.c, shortcut, g, k=((3, 3), (3, 3)), e=1.0) for _ in range(n))
 
 
